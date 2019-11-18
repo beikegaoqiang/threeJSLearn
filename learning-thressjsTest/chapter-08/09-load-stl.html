@@ -17,6 +17,8 @@
       <div class="content">
         <div id="button-firster">firster</div>
         <div id="button-slower">slower</div>
+        <div id="button-scaleAdd">Add</div>
+        <div id="button-scaleReduce">Reduce</div>
       </div>
     </div>
 
@@ -31,10 +33,11 @@
         overflow: hidden;
       }
       .button-set{
-        width: 500px;
+        width: 1000px;
         height: 200px;
         display: flex;
         align-items: center;        /* 子元素垂直居中*/
+        justify-content: center;
 
         position: relative;
         top: 50%;
@@ -46,30 +49,36 @@
         /* text-align: center; */
         font-size: 30px;
         /* line-height: 30px;     设了就不能使得文字居中了  */
-        color: #ff6700;
+        color: #fff;
         background-color: crimson;
         user-select: none;       /* 设置页面的文字无法被选定*/
         border: 10px solid black;
       }
 
       .content{
-        width: 400px;
+        /* 高度不设，由内容撑开*/
         height: 100px;
+      }
+      .content > div{
+        text-align: center; 
       }
       #button-firster{
         display: inline-block;
         height: 100px;
-        width: 120px;
+        width: 180px;
         /* margin-left: 10px; */
+        background-color: blue;
         border: 5px solid black;
       }
-      #button-slower{
+      #button-slower, #button-scaleAdd, #button-scaleReduce{
         display: inline-block;
         height: 100px;
-        width: 120px;
+        width: 180px;
         margin-left: 10px;
+        background-color: blue;
         border: 5px solid black;
       }
+      
        
     </style>
 
@@ -77,12 +86,13 @@
     <script type="text/javascript">
       var buttonFirster = document.getElementById("button-firster");
       var buttonSlower = document.getElementById("button-slower");
+      var buttonScaleAdd = document.getElementById("button-scaleAdd");
+      var buttonScaleReduce = document.getElementById("button-scaleReduce");
+
       var moduleList = ["gear","axle","bearing","LET","smallGear","spring","110piston"];
       var i = 0;
       var rotateSpeed = 0.006;
-
-      
-
+      var scale = 45;
 
 
 
@@ -93,8 +103,8 @@
           // 创建一个场景，其中包含所有元素，如图形、相机和灯光。
           var scene = new THREE.Scene();
 
-          // 创建一个摄像头, 定义了观察图形的位置。
-          var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+          // 创建一个摄像头, 定义了观察图形的位置。 这决定了所展示的模型大小
+          var camera = new THREE.PerspectiveCamera(scale, window.innerWidth / window.innerHeight, 0.1, 1000);
 
           // 创建一个WebGL渲染器并设置渲染器大小
           var webGLRenderer = new THREE.WebGLRenderer();
@@ -205,6 +215,50 @@
             console.log(rotateSpeed);
           }
           else { rotateSpeed = 0.001 }
+      });
+      //放缩按钮
+      buttonSlower.addEventListener("click",function consoleTest(element){
+          i++;
+          console.log(element.target.innerText);
+          // location.reload();
+          // init();
+          // location.href = "http://localhost:81/learning-thressjsTest/chapter-08/09-load-stl.html"
+          console.log(location.href);
+          // 增加模型转动速度
+          if( scale < 80 ){
+            scale += 5;
+            console.log(scale);
+            
+          }
+          else { scale = 80 }
+      });
+      buttonScaleAdd.addEventListener("click",function consoleTest(element){
+          i++;
+          console.log(element.target.innerText);
+          // location.reload();
+          // init();
+          // location.href = "http://localhost:81/learning-thressjsTest/chapter-08/09-load-stl.html"
+          console.log(location.href);
+          // 增加模型转动速度
+          if( scale < 80 ){
+            scale += 5;
+            console.log(scale);
+          }
+          else { scale = 80 }
+      });
+      buttonScaleReduce.addEventListener("click",function consoleTest(element){
+          i++;
+          console.log(element.target.innerText);
+          // location.reload();
+          // init();
+          // location.href = "http://localhost:81/learning-thressjsTest/chapter-08/09-load-stl.html"
+          console.log(location.href);
+          // 增加模型转动速度
+          if( scale > 20 ){
+            scale -= 5;
+            console.log(scale);
+          }
+          else { scale = 20 }
       });
 
     </script>
