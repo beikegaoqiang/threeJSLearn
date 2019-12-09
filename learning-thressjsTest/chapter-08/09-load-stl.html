@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>thress.js展示三维模型 </title>
+    <title>three.js展示三维模型 </title>
     <script type="text/javascript" src="../libs/three.js"></script>
     <script type="text/javascript" src="../libs/STLLoader.js"></script>
 
@@ -24,7 +24,9 @@
       <div id="button-slower">slower</div>
       <div id="button-scaleAdd">change</div>
       <div id="button-scaleReduce">magnify</div>
-      <div id="button-move">move</div>
+      <div id="button-moveX">moveX</div>
+      <div id="button-moveY">moveY</div>
+      <div id="button-moveZ">moveZ</div>
     </div>
   </div>
 
@@ -65,7 +67,6 @@
       margin-bottom: 20px;
     }
     .content > div{
-      
       display: inline-block;
       height: 80px;
       width: 180px;
@@ -87,31 +88,29 @@
 
   <!-- 运行Three.js示例的JS代码 -->
   <script type="text/javascript">
-    var buttonFirster = document.getElementById("button-firster");
-    var buttonSlower = document.getElementById("button-slower");
-    var buttonScaleAdd = document.getElementById("button-scaleAdd");
-    var buttonScaleReduce = document.getElementById("button-scaleReduce");
-    var buttonMove = document.getElementById("button-move");
+    var buttonFirster = document.getElementById("button-firster")
+    var buttonSlower = document.getElementById("button-slower")
+    var buttonScaleAdd = document.getElementById("button-scaleAdd")
+    var buttonScaleReduce = document.getElementById("button-scaleReduce")
+    var buttonMoveX = document.getElementById("button-moveX")
+    var buttonMoveY = document.getElementById("button-moveY")
+    var buttonMoveZ = document.getElementById("button-moveZ")
 
-    var moduleList = ["gear","axle","bearing","LET","smallGear","spring","110piston"];
-    var rotateSpeed = 0.006;
-    var mode = 1;
-    // var Px = 20;
-    // var Py = 50;
-    // var Pz = 20;
-    // var scale = 0.5;
+    var moduleList = ["gear","axle","bearing","LET","smallGear","spring","110piston"]
+    var rotateSpeed = 0.006
+    var mode = 1
+    var angle = 60
     
     
-      
       
     // 创建一个场景，其中包含所有供观察的模型、坐标轴、灯光
     function initScene() {
       scene = new THREE.Scene()
     }
-
     // 创建一个相机, 定义了观察图形的位置。 这有时决定了所展示的模型大小
-    function initCamera() {
-      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
+    function initCamera(angle) {
+      camera = new THREE.PerspectiveCamera(angle, (window.innerWidth/2) / (window.innerHeight/2), 0.1, 1000)
+      console.log("放大视图" + angle)
       // 将相机定位并指向场景中心
       camera.position.x = 150
       camera.position.y = 150
@@ -122,15 +121,13 @@
       // camera.up.y = 1
       // camera.up.z = 0
     }
-    
-
     // 创建一个WebGL渲染器并设置渲染器大小，并产生阴影
     function initRenderer() {      
-      webGLRenderer = new THREE.WebGLRenderer();
-      webGLRenderer.setClearColor(new THREE.Color(0xFFFFFF, 1.0));
-      webGLRenderer.setSize(window.innerWidth, window.innerHeight);
+      webGLRenderer = new THREE.WebGLRenderer()
+      webGLRenderer.setClearColor(new THREE.Color(0xCCCCCC, 1.0))
+      webGLRenderer.setSize(window.innerWidth/2, window.innerHeight/2)
       webGLRenderer.shadowMapEnabled = true;    
-      document.getElementById("WebGL-output").appendChild(webGLRenderer.domElement);
+      document.getElementById("WebGL-output").appendChild(webGLRenderer.domElement)
     }
     // 创建一个灯光
     function initLight() {
@@ -140,7 +137,7 @@
     }
     // 创建一个轴
     function initaxes() {
-      var axes = new THREE.AxisHelper( 20 );
+      var axes = new THREE.AxisHelper( 20 )
       axes.position.set(0, 0, 0)
       scene.add(axes)
     }
@@ -149,25 +146,28 @@
     // 创建loader，加载外部模型到scene中
     function initObject() {
       console.log("开始加载模型")
-      var loader = new THREE.STLLoader();
-      group = new THREE.Object3D();
+      var loader = new THREE.STLLoader()
+      group = new THREE.Object3D()
 
       loader.load("../assets/models/test/" + moduleList[6], function (geometry) {
           console.log("第1个模型为：" + mode)
-          console.log(geometry);
-          var mat = new THREE.MeshLambertMaterial({ color: 0x166666 });
+          var mat = new THREE.MeshLambertMaterial({ color: 0x6666FF })
+          // 合并成一个Mesh网格对象   geometry为模型体 mat为材质
           group = new THREE.Mesh(geometry, mat)
           group.position.z = 0
           group.position.y = 0
           group.position.x = 0
           group.scale.set(0.5,0.5,0.5)
           // group.rotation.x = -0.5 * Math.PI;
-          console.log("加载第二个模型：")
-          scene.add(group);
+
+          // Geometry 的外边界圆形
+          console.log( group.geometry.boundingSphere)
+          // 模型居中
+          group.geometry.center()
+          
+          scene.add(group)
       });
     }
-    
-
     // 创建一个动画循环渲染
     function render() {
       // group.rotation.y += 0.01
@@ -177,10 +177,9 @@
     }
     
   
-
     function threeStart() {
       initRenderer()
-      initCamera()
+      initCamera(angle)
       initScene()
       initaxes()
       initLight()
@@ -188,41 +187,40 @@
       render()
     }
     window.onload = threeStart()
-    // webGLRenderer.render(scene, camera)
-
 
 
     // 鼠标拖动功能开发
     var flag = false
-    var initialPointX   
-    var initialAngle
-    var distance        // 鼠标移动的距离
-    var radian          // 图形旋转的弧度
+    var initialPointX,initialPointY
+    var initialAngleX,initialAngleY
+    var distanceX,distanceY         // 鼠标移动的距离
+    var radianX,radianY             // 图形旋转的弧度
     
+
     var output = document.getElementById("WebGL-output")
-    // 测试获取X Y值
+
     output.onmousedown = function(e) {
-      // group.rotation.z = 3    测试
-      // console.log(e)
+    
       initialPointX = e.offsetX
-      initialAngle = group.rotation.y 
-      // console.log("图形初始旋转角度为：" + initialAngle)
+      initialPointY = e.offsetY
+      initialAngleX = group.rotation.y 
+      initialAngleY = group.rotation.x
+
       document.onmousemove = mouseMove
 
-      // flag = !flag
     }
 
     function mouseMove(e){
-      distance = e.offsetX - initialPointX
-      // console.log("移动的距离为：" + distance)
+      distanceX = e.offsetX - initialPointX
+      distanceY = e.offsetY - initialPointY
       
-      radian = distance * Math.PI * 4 / 1200
-      group.rotation.y = initialAngle + radian
-      // console.log(radian,group.rotation.z)
+      radianX = distanceX * Math.PI * 4 / 1200
+      radianY = distanceY * Math.PI * 4 / 1200
 
-      render()
-      // initObject()   
-      // threeStart()   
+      group.rotation.y = initialAngleX + radianX
+      group.rotation.x = initialAngleY + radianY
+
+      render()  
     }
 
     output.onmouseover = function(){
@@ -235,22 +233,17 @@
 
 
 
-
-
-
-
-
     //1.加快旋转按钮
     buttonFirster.addEventListener("click",function (element){
-        console.log(element.target.innerText);
-        console.log(location.href);
+        console.log(element.target.innerText)
+        console.log(location.href)
         // 增加模型转动速度
         if( rotateSpeed < 0.05 ){
-          rotateSpeed += 0.005;
-          console.log(rotateSpeed);
+          rotateSpeed += 0.005
+          console.log(rotateSpeed)
         }
         else { rotateSpeed = 0.056 }
-    });
+    })
     //2.放慢旋转按钮
     buttonSlower.addEventListener("click",function (element){
         console.log(element.target.innerText);
@@ -261,36 +254,34 @@
           console.log(rotateSpeed);
         }
         else { rotateSpeed = 0.001 }
-    });
+    })
 
 
     var rotateAxes = []
     //3.切换模型按钮
     buttonScaleAdd.addEventListener("click",function (element){
       
-    });
+    })
     // 4.放大
     buttonScaleReduce.addEventListener("click",function (element){
       console.log("放大视图")
-      var webGL = document.getElementById("WebGL-output")
-      var childs = webGL.childNodes;     
-      for(var i = childs .length - 1; i >= 0; i--) {
-              webGL.removeChild(childs[i])
-      }
-      scale = scale + 0.1
-      init(mode,scale,Px,Py,Pz)
-    });
+      angle -= 3
+      initCamera(angle)
+      render()
+    })
     // 4.移动
-    buttonMove.addEventListener("click",function (element){
-      console.log("放大视图")
-      var webGL = document.getElementById("WebGL-output")
-      var childs = webGL.childNodes;     
-      for(var i = childs .length - 1; i >= 0; i--) {
-              webGL.removeChild(childs[i])
-      }
+    buttonMoveX.addEventListener("click",function (element){
+      console.log("沿X轴移动模型")
       Px += 5
-      init(mode,scale,Px,Py,Pz)
-    });
+    })
+    buttonMoveX.addEventListener("click",function (element){
+      console.log("沿Y轴移动模型")
+      Py += 5
+    })
+    buttonMoveX.addEventListener("click",function (element){
+      console.log("沿Z轴移动模型")
+      Py += 5
+    })
 
   </script>
 </body>
